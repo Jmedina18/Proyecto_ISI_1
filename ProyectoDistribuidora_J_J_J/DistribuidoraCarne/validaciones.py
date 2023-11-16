@@ -281,11 +281,11 @@ def validar_stock_actual(stock_actual):
 def validar_id(id):
     errores = []
 
-    # Validar que el RTN tenga exactamente 13 caracteres.
+    # Validar que la id tenga exactamente 13 caracteres.
     if len(id) != 14:
         errores.append("El id debe tener exactamente 13 caracteres.")
 
-    # Validar que el RTN contenga solo dígitos.
+    # Validar que la id contenga solo dígitos.
     if not id.isdigit():
         errores.append("El id debe contener solo dígitos (números).")
  
@@ -409,3 +409,105 @@ def validar_nombre_negocio(nombre):
     
     if re.search('[^a-zA-Z0-9 ]', nombre):
         raise ValidationError('El nombre no puede contener caracteres especiales ni signos de puntuación.')
+
+
+'''
+# Definir la función de validación personalizada para el campo id_cliente
+def validar_documento_identidad(value):
+    tipo_documento = self.tipo_documento
+    id_cliente = value
+
+    # Validar el tipo de documento y aplicar las reglas correspondientes
+    if tipo_documento == 'Identidad':
+        # Validar que la id tenga exactamente 13 caracteres.
+        if len(id_cliente) != 13:
+            raise ValidationError("La cédula debe tener exactamente 13 caracteres.")
+
+        # Validar que la id contenga solo dígitos.
+        if not id_cliente.isdigit():
+            raise ValidationError("La cédula debe contener solo dígitos (números).")
+
+    elif tipo_documento == 'Pasaporte':
+        # Ejemplo: AB123456 (dos letras seguidas de seis números)
+        if not re.match(r'^[A-Z]{2}\d{6}$', id_cliente):
+            raise ValidationError("Formato de pasaporte no válido.")
+
+    elif tipo_documento == 'Licencia conducir':
+        # Pueden variar en formato, ejemplo: A1234567
+        if not re.match(r'^[A-Z]\d{7}$', id_cliente):
+            raise ValidationError("Formato de licencia de conducir no válido.")
+
+    elif tipo_documento == 'Tarjeta residencia':
+        # Pueden variar en formato, ejemplo: TR-12345678
+        if not re.match(r'^TR-\d{8}$', id_cliente):
+            raise ValidationError("Formato de tarjeta de residencia no válido.")
+
+    else:
+        # Tipo de documento no válido
+        raise ValidationError("Tipo de documento no válido.")
+
+
+'''
+def validar_documento_identidad(tipo_documento,value):
+    id_cliente=value
+    errores = []  
+
+    if tipo_documento == 'Identidad':
+        if len(id_cliente) != 13:
+            errores.append("La cédula debe tener exactamente 13 caracteres.")
+
+        if not id.isdigit():
+            errores.append("La cédula debe contener solo dígitos (números).")
+
+    elif tipo_documento == 'pasaporte':
+        if not re.match(r'^[A-Z]{2}\d{6}$', id_cliente):
+            errores.append("Formato de pasaporte no válido.")
+
+    elif tipo_documento == 'licencia_conducir':
+        if not re.match(r'^[A-Z]\d{7}$', id_cliente):
+            errores.append("Formato de licencia de conducir no válido.")
+
+    elif tipo_documento == 'tarjeta_residencia':
+        if not re.match(r'^TR-\d{8}$', id_cliente):
+            errores.append("Formato de tarjeta de residencia no válido.")
+
+    else:
+        # Tipo de documento no válido
+        errores.append("Tipo de documento no válido.")
+
+    return errores
+
+
+
+'''
+def validar_documento_identidad(tipo_documento,id):
+    """
+    Valida diferentes tipos de documentos de identidad según el formato especificado.
+    
+    Tipos de documentos permitidos: 'cedula', 'pasaporte', 'licencia_conducir', 'tarjeta_residencia'
+    """
+    if tipo_documento == 'Identidad':
+        # Validar que la id tenga exactamente 13 caracteres.
+        if len(id) != 14:
+            errores.append("El id debe tener exactamente 13 caracteres.")
+
+    # Validar que la id contenga solo dígitos.
+        if not id.isdigit():
+            errores.append("El id debe contener solo dígitos (números).")
+
+    elif tipo_documento == 'Pasaporte':
+        # Ejemplo: AB123456 (dos letras seguidas de seis números)
+        return re.match(r'^[A-Z]{2}\d{6}$') is not None
+
+    elif tipo_documento == 'Licencia conducir':
+        # Pueden variar en formato, ejemplo: A1234567
+        return re.match(r'^[A-Z]\d{7}$') is not None
+
+    elif tipo_documento == 'Tarjeta residencia':
+        # Pueden variar en formato, ejemplo: TR-12345678
+        return re.match(r'^TR-\d{8}$') is not None
+
+    else:
+        # Tipo de documento no válido
+        return False
+'''
