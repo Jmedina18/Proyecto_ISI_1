@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Categoria, Clientes, Empleados, Producto, Proveedor, Sucursal, TipoCargo,TipoDocumento,Impuesto, MetodoPago, EncabezadoFactura
+from .models import Categoria, Clientes, Empleados, Producto, Proveedor, Sucursal, TipoCargo,TipoDocumento,Impuesto, MetodoPago
 from django.urls import reverse_lazy
 
 
@@ -273,30 +273,6 @@ class MetodoPagoDeleteView(DeleteView):
     template_name = 'metodo_pago_confirm_delete.html'  # Ajusta el nombre de la plantilla según sea necesario
     success_url = reverse_lazy('metodo_pago-list')
     
-
-#Encabezado de Factura
-class EncabezadoFacturaListView(ListView):
-    model = EncabezadoFactura
-    template_name = 'encabezado_factura_list.html'
-    context_object_name = 'encabezados_factura'
-
-class EncabezadoFacturaCreateView(CreateView):
-    model = EncabezadoFactura
-    template_name = 'encabezado_factura_form.html'
-    fields = ['nombre_negocio', 'direccion_negocio', 'correo', 'rtn', 'telefono' ]
-    success_url = reverse_lazy('encabezado_factura-list')
-
-class EncabezadoFacturaUpdateView(UpdateView):
-    model = EncabezadoFactura
-    template_name = 'encabezado_factura_form.html'
-    fields = ['nombre_negocio', 'direccion_negocio', 'correo', 'rtn', 'telefono' ]
-    success_url = reverse_lazy('encabezado_factura-list')
-
-class EncabezadoFacturaDeleteView(DeleteView):
-    model = EncabezadoFactura
-    template_name = 'encabezado_factura_confirm_delete.html'
-    success_url = reverse_lazy('encabezado_factura-list')
-
 # class CAIListView(ListView):
 #     model = CAI
 #     template_name = 'cai/cai_list.html'  # Reemplaza 'cai_list.html' con la plantilla que desees
