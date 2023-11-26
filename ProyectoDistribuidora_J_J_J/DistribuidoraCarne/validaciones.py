@@ -1,5 +1,5 @@
 import re
-from datetime import date
+from datetime import date, timedelta
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -430,7 +430,6 @@ def validar_rango_inicial(rango_inicial_factura):
     if rango_inicial_factura< 0:
         raise ValidationError('El rango inicial de factura no puede ser un número negativo.')
 
-
 def validar_rango_final(rango_final_factura, rango_inicial_factura):
     if rango_final_factura <= rango_inicial_factura:
         raise ValidationError('El rango final de factura debe ser mayor que el rango inicial.')
@@ -443,3 +442,147 @@ def validar_fechas(fecha_inicio, fecha_final):
     if fecha_inicio >= fecha_final:
         raise ValidationError('La fecha de inicio debe ser anterior a la fecha final.')
 
+def validar_fecha_entrega(fecha_entrega):
+    if fecha_entrega and fecha_entrega < timezone.now().date():
+        raise ValidationError('La fecha de entrega no puede ser en el pasado.')
+    
+    # Supongamos que hay una lista de días festivos, ajusta según tus necesidades.
+    dias_festivos = [date(2023, 12, 25), date(2024, 1, 1)]  # Ejemplo: Navidad y Año Nuevo
+    if fecha_entrega in dias_festivos:
+        raise ValidationError('La fecha de entrega no puede ser un día festivo.')
+    
+    #Fecha de entrega maximo 30 dias
+    fecha_minima = timezone.now().date()
+    fecha_maxima = timezone.now().date() + timedelta(days=30)  # Ejemplo: Permitir entregas hasta 30 días en el futuro
+    if fecha_entrega and not (fecha_minima <= fecha_entrega <= fecha_maxima):
+        raise ValidationError('La fecha de entrega debe estar dentro del rango permitido.')
+
+def validar_hora_entrega(hora_entrega):
+
+    hora_actual = timezone.now().time()
+    if hora_entrega and hora_entrega < hora_actual:
+        raise ValidationError('La hora de entrega no puede ser en el pasado.')
+    
+    hora_minima = timezone.now().time()
+    hora_maxima = timezone.now().replace(hour=23, minute=59, second=59).time()
+    if hora_entrega and not (hora_minima <= hora_entrega <= hora_maxima):
+        raise ValidationError('La hora de entrega debe estar dentro del rango permitido.')
+    
+    hora_inicio_laborable = timezone.now().replace(hour=9, minute=0, second=0).time()
+    hora_fin_laborable = timezone.now().replace(hour=17, minute=0, second=0).time()
+    if hora_entrega and not (hora_inicio_laborable <= hora_entrega <= hora_fin_laborable):
+        raise ValidationError('La hora de entrega debe estar dentro de las horas laborables.')
+    
+    if hora_entrega and hora_entrega.minute % 15 != 0:
+        raise ValidationError('La hora de entrega debe ser en intervalos de 15 minutos.')
+    
+def validar_estado_entrega(estado_entrega):
+    if not estado_entrega or estado_entrega.strip() == '':
+        raise ValidationError('El estado de entrega no puede estar vacío.')
+    
+    estados_permitidos = ['En proceso', 'Entregado', 'Cancelado']  # Ejemplo de valores permitidos
+    if estado_entrega not in estados_permitidos:
+        raise ValidationError('El estado de entrega no es válido.')
+    
+    longitud_permitida = 10  # Ejemplo: La longitud máxima permitida
+    if len(estado_entrega) > longitud_permitida:
+        raise ValidationError('La longitud del estado de entrega no puede exceder {} caracteres.'.format(longitud_permitida))
+    
+def validar_subtotal(sub_total):
+    # Validación: Subtotal no puede ser negativo
+    if sub_total < 0:
+        raise ValidationError('El subtotal no puede ser un número negativo.')
+
+    # Validación: Subtotal no puede ser cero
+    if sub_total == 0:
+        raise ValidationError('El subtotal no puede ser cero.')
+
+    # Validación: Subtotal no puede tener más de dos decimales
+    if sub_total % 1 > 0.01:
+        raise ValidationError('El subtotal no puede tener más de dos decimales.')
+
+    # Validación: Subtotal no puede exceder un valor máximo (ajusta según tus necesidades)
+    valor_maximo = 10000  # Ejemplo de valor máximo permitido
+    if sub_total > valor_maximo:
+        raise ValidationError('El subtotal no puede exceder {}.'.format(valor_maximo))
+    
+def validar_descuento(descuento,sub_total):
+        # Validación 1: Descuento no puede ser negativo
+        if descuento < 0:
+            raise ValidationError('El descuento no puede ser un número negativo.')
+
+        # Validación 2: Descuento no puede exceder el subtotal (ajusta según tus necesidades)
+        if descuento > sub_total:
+            raise ValidationError('El descuento no puede ser mayor que el subtotal.')
+
+        # Validación 3: Descuento no puede tener más de dos decimales
+        if descuento % 1 > 0.01:
+            raise ValidationError('El descuento no puede tener más de dos decimales.')
+
+        # Validación 4: Descuento no puede exceder un valor máximo (ajusta según tus necesidades)
+        valor_maximo_descuento = 500  # Ejemplo de valor máximo permitido
+        if descuento > valor_maximo_descuento:
+            raise ValidationError('El descuento no puede exceder {}.'.format(valor_maximo_descuento))
+        
+#Comprasder
+def validar_cantidad(cantidad):
+        # Validación: Cantidad no puede ser negativa
+    if cantidad < 0:
+        raise ValidationError('La cantidad no puede ser un número negativo.')
+    # Validación: Cantidad debe ser un número entero
+    if not isinstance(cantidad, int):
+        raise ValidationError('La cantidad debe ser un número entero.')
+    # Validación: Cantidad no puede ser cero
+    if cantidad == 0:
+        raise ValidationError('La cantidad no puede ser cero.')
+    # Validación: Cantidad no puede ser un número decimal
+    if cantidad % 1 != 0:
+        raise ValidationError('La cantidad no puede ser un número decimal.')
+
+
+def validar_precio_prv(precio_prv):
+    # Validación: Precio proveedor no puede ser negativo
+    if precio_prv < 0:
+        raise ValidationError('El precio proveedor no puede ser un número negativo.')
+    # Validación: Precio proveedor no puede ser cero
+    if precio_prv == 0:
+        raise ValidationError('El precio proveedor no puede ser cero.')
+    # Validación: Precio proveedor no puede ser un número decimal
+    if precio_prv % 1 != 0:
+        raise ValidationError('El precio proveedor no puede ser un número decimal.')
+    # Validación: Precio proveedor no puede ser negativo o cero
+    if precio_prv <= 0:
+        raise ValidationError('El precio proveedor debe ser un número positivo.')
+
+def validar_total(total):
+    # Validación: Total no puede ser negativo
+    if total < 0:
+        raise ValidationError('El total no puede ser un número negativo.')
+    # Validación: Total no puede ser cero
+    if total == 0:
+        raise ValidationError('El total no puede ser cero.')
+    # Validación: Total no puede ser un número decimal
+    if total % 1 != 0:
+        raise ValidationError('El total no puede ser un número decimal.')
+    # Validación: Total no puede exceder un valor máximo (ajusta según tus necesidades)
+    valor_maximo_total = 10000  # Ejemplo de valor máximo permitido
+    if total > valor_maximo_total:
+        raise ValidationError('El total no puede exceder {}.'.format(valor_maximo_total))
+
+def validar_costo(costo):
+    # Validación: Costo no puede ser negativo
+    if costo < 0:
+        raise ValidationError('El costo no puede ser un número negativo.')
+    # Validación: Costo no puede ser cero
+    if costo == 0:
+        raise ValidationError('El costo no puede ser cero.')
+    # Validación: Costo no puede ser un número decimal
+    if costo % 1 != 0:
+        raise ValidationError('El costo no puede ser un número decimal.')
+    # Validación: Costo no puede exceder un valor máximo (ajusta según tus necesidades)
+    valor_maximo_costo = 10000  # Ejemplo de valor máximo permitido
+    if costo > valor_maximo_costo:
+        raise ValidationError('El costo no puede exceder {}.'.format(valor_maximo_costo))
+    # Validación: Costo no puede tener más de dos decimales
+    if costo % 1 > 0.01:
+        raise ValidationError('El costo no puede tener más de dos decimales.')

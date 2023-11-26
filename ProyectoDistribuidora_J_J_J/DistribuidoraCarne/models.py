@@ -1,6 +1,6 @@
 from django.db import models
 # Asumiendo que las validaciones se encuentran correctamente definidas en el archivo 'validaciones.py'
-from DistribuidoraCarne.validaciones import  validar_Total_Cotizacion, validar_fechas, validar_total_pedido, validar_fecha_emision, validar_rango_inicial, validar_rango_final, validar_nombre, validar_telefono, validar_correo, validar_date_time, validar_descripcion, validar_estado, validar_direccion, validar_rtn, validar_fecha_nacimiento, validar_nivel_maximo_stock, validar_nivel_minimo_stock, validar_stock ,validar_salario, validar_fecha_actualizacion, validar_valor_impuesto, validar_precio
+from DistribuidoraCarne.validaciones import  validar_Total_Cotizacion, validar_fechas, validar_total_pedido, validar_fecha_emision, validar_rango_inicial, validar_rango_final, validar_nombre, validar_telefono, validar_correo, validar_date_time, validar_descripcion, validar_estado, validar_direccion, validar_rtn, validar_fecha_nacimiento, validar_nivel_maximo_stock, validar_nivel_minimo_stock, validar_stock ,validar_salario, validar_fecha_actualizacion, validar_valor_impuesto, validar_precio, validar_fecha_entrega,validar_hora_entrega,validar_estado_entrega,validar_subtotal,validar_descuento,validar_cantidad,validar_precio_prv,validar_costo,validar_total
 
 class TipoDocumento(models.Model):
     nombre = models.CharField(max_length=50, validators=[validar_nombre])
@@ -223,15 +223,16 @@ class Cotizacion(models.Model):
     def __str__(self):
         return str(self.id_cliente)
 
+#ultimas validaciones hechas
 class Entrega(models.Model):
     id_cliente = models.ForeignKey(Clientes, on_delete=models.CASCADE)
     id_pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
     id_empleado = models.ForeignKey(Empleados, on_delete=models.CASCADE)
     id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    fecha_entrega = models.DateField(null=True, blank=True)
-    hora_entrega = models.TimeField(null=True, blank=True)
+    fecha_entrega = models.DateField(null=True, blank=True, validators=[validar_fecha_entrega])
+    hora_entrega = models.TimeField(null=True, blank=True, validators=[validar_hora_entrega])
     direccion_entrega = models.CharField(max_length=255, null=True, blank=True, validators=[validar_direccion])
-    estado_entrega = models.CharField(max_length=50, null=True, blank=True)
+    estado_entrega = models.CharField(max_length=50, null=True, blank=True, validators=[validar_estado_entrega])
     costo_entrega = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[validar_Total_Cotizacion])
     # factura = models.TextField(null=True, blank=True)
 
@@ -248,10 +249,10 @@ class MetodoPago(models.Model):
 class ComprasEnc(models.Model):
     fecha_compra=models.DateField(null=True,blank=True, validators=[validar_date_time])
     observacion=models.TextField(blank=True,null=True, validators=[validar_descripcion])
-    no_factura=models.CharField(max_length=100)
+    no_factura=models.CharField(max_length=100, unique=True)
     fecha_factura=models.DateField()
-    sub_total=models.FloatField(default=0)
-    descuento=models.FloatField(default=0)
+    sub_total=models.FloatField(default=0, validators=[validar_subtotal])
+    descuento=models.FloatField(default=0, validators=[validar_descuento])
     total=models.FloatField(default=0, validators=[validar_Total_Cotizacion])
 
     proveedor=models.ForeignKey(Proveedor,on_delete=models.CASCADE)
@@ -275,12 +276,12 @@ class ComprasEnc(models.Model):
 class ComprasDet(models.Model):
     compra=models.ForeignKey(ComprasEnc,on_delete=models.CASCADE)
     producto=models.ForeignKey(Producto,on_delete=models.CASCADE)
-    cantidad=models.BigIntegerField(default=0)
-    precio_prv=models.FloatField(default=0)
-    sub_total=models.FloatField(default=0)
-    descuento=models.FloatField(default=0)
-    total=models.FloatField(default=0)
-    costo=models.FloatField(default=0)
+    cantidad=models.BigIntegerField(default=0, validators=[validar_cantidad])
+    precio_prv=models.FloatField(default=0, validators=[validar_precio_prv])
+    sub_total=models.FloatField(default=0, validators=[validar_subtotal])
+    descuento=models.FloatField(default=0, validators=[validar_descuento])
+    total=models.FloatField(default=0, validators=[validar_total])
+    costo=models.FloatField(default=0, validators=[validar_costo])
     cos=models.AutoField
     def _str_(self):
         return '{}'.format(self.producto)
@@ -296,10 +297,10 @@ class ComprasDet(models.Model):
 
 class FacturaEnc(models.Model):
     cliente = models.ForeignKey(Clientes, on_delete=models.CASCADE)
-    fecha = models.DateTimeField(auto_now_add=True)
-    sub_total=models.FloatField(default=0)
-    descuento=models.FloatField(default=0)
-    total=models.FloatField(default=0)
+    fecha = models.DateTimeField(auto_now_add=True, validators=[validar_fecha_emision])
+    sub_total=models.FloatField(default=0, validators=[validar_subtotal])
+    descuento=models.FloatField(default=0, validators=[validar_descuento])
+    total=models.FloatField(default=0, validators=[validar_total])
 
     def _str_(self):
         return '{}'.format(self.id)
@@ -315,11 +316,11 @@ class FacturaEnc(models.Model):
 class FacturaDet(models.Model):
     factura = models.ForeignKey(FacturaEnc,on_delete=models.CASCADE)
     producto=models.ForeignKey(Producto,on_delete=models.CASCADE)
-    cantidad=models.BigIntegerField(default=0)
-    precio=models.FloatField(default=0)
-    sub_total=models.FloatField(default=0)
-    descuento=models.FloatField(default=0)
-    total=models.FloatField(default=0)
+    cantidad=models.BigIntegerField(default=0, validators=[validar_cantidad])
+    precio=models.FloatField(default=0,validators=[validar_precio])
+    sub_total=models.FloatField(default=0, validators=[validar_subtotal])
+    descuento=models.FloatField(default=0, validators=[validar_descuento])
+    total=models.FloatField(default=0, validators=[validar_total])
 
     def _str_(self):
         return '{}'.format(self.producto)
